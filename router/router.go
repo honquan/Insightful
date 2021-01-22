@@ -22,8 +22,7 @@ type App struct {
 
 func (a *App) InitRouter() {
 	// creates a new instance of a mux router
-	a.Router = mux.NewRouter()
-	a.Router.StrictSlash(true)
+	a.Router = mux.NewRouter().StrictSlash(true)
 
 	// add router ws controller get
 	wsController := &controllers.WsController{}
