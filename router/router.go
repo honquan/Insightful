@@ -1,14 +1,16 @@
 package router
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 	"insightful/controllers"
 	"insightful/dtos"
 	"log"
 	"net/http"
+	"os"
+	"time"
 )
 
 const (
@@ -16,8 +18,8 @@ const (
 )
 
 type App struct {
-	Router *mux.Router
-	DB     *sql.DB
+	Router  *mux.Router
+	MysqlDB *gorm.DB
 }
 
 func (a *App) InitRouter() {
@@ -30,6 +32,26 @@ func (a *App) InitRouter() {
 
 	// register middleware
 	a.Router.Use(a.recoverPanicMiddleware)
+}
+
+func (a *App) InitDatabase() {
+	var err error
+	mysqlUsername := os.Getenv("DB_MYSQL_USERNAME")
+	mysqlPassword := os.Getenv("DB_MYSQL_PASSWORD")
+	mysqlHost := os.Getenv("DB_MYSQL_HOST")
+	mysqlPort := os.Getenv("DB_MYSQL_PORT")
+	mysqlDBName := os.Getenv("DB_MYSQL_NAME")
+
+	a.MysqlDB, err = gorm.Open("mysql", fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8&parseTime=True", mysqlUsername, mysqlPassword, mysqlHost, mysqlPort, mysqlDBName))
+	if err != nil {
+		panic(fmt.Sprintf("Failed to connect database: %v", err))
+	}
+
+	a.MysqlDB.DB().SetConnMaxLifetime(30 * time.Minute)
+
+	// set max idle and max open conns
+	//a.DB.DB().SetMaxIdleConns(os.Getenv("DB_MYSQL_MAXIDLECONNS"))
+	//a.DB.DB().SetMaxOpenConns(os.Getenv("DB_MYSQL_MAXOPENCONNS"))
 }
 
 func (a *App) Run(addr string) {
