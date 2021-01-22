@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
+	"insightful/src/apis/conf"
 	"insightful/src/apis/controllers"
 	"insightful/src/apis/dtos"
 	"log"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -36,11 +36,11 @@ func (a *App) InitRouter() {
 
 func (a *App) InitDatabase() {
 	var err error
-	mysqlUsername := os.Getenv("DB_MYSQL_USERNAME")
-	mysqlPassword := os.Getenv("DB_MYSQL_PASSWORD")
-	mysqlHost := os.Getenv("DB_MYSQL_HOST")
-	mysqlPort := os.Getenv("DB_MYSQL_PORT")
-	mysqlDBName := os.Getenv("DB_MYSQL_NAME")
+	mysqlUsername := conf.EnvConfig.DBMysqlUsername
+	mysqlPassword := conf.EnvConfig.DBMysqlPassword
+	mysqlHost := conf.EnvConfig.DBMysqlHost
+	mysqlPort := conf.EnvConfig.DBMysqlPort
+	mysqlDBName := conf.EnvConfig.DBMysqlName
 
 	a.MysqlDB, err = gorm.Open("mysql", fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8&parseTime=True", mysqlUsername, mysqlPassword, mysqlHost, mysqlPort, mysqlDBName))
 	if err != nil {
@@ -50,8 +50,8 @@ func (a *App) InitDatabase() {
 	a.MysqlDB.DB().SetConnMaxLifetime(30 * time.Minute)
 
 	// set max idle and max open conns
-	//a.DB.DB().SetMaxIdleConns(os.Getenv("DB_MYSQL_MAXIDLECONNS"))
-	//a.DB.DB().SetMaxOpenConns(os.Getenv("DB_MYSQL_MAXOPENCONNS"))
+	a.MysqlDB.DB().SetMaxIdleConns(conf.EnvConfig.DBMysqlMaxIdleConns)
+	a.MysqlDB.DB().SetMaxOpenConns(conf.EnvConfig.DBMysqlMaxOpenConns)
 }
 
 func (a *App) Run(addr string) {

@@ -10,6 +10,7 @@ type WsController struct {
 }
 
 func (s *WsController) WsGet(w http.ResponseWriter, req *http.Request) {
+	//logger.Warnf
 	resp := &dtos.HttpResponse{
 		Meta: &dtos.MetaResp{
 			Code:    http.StatusOK,
