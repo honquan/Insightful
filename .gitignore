@@ -5,6 +5,11 @@
 *.so
 *.dylib
 
+# IDEs workspace dirs
+**/.idea
+**/.vscode
+**/.env
+
 # Test binary, built with `go test -c`
 *.test
 
