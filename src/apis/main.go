@@ -1,7 +1,7 @@
 package main
 
 import (
-	"insightful/router"
+	"insightful/src/apis/router"
 )
 
 func main() {

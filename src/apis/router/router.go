@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
-	"insightful/controllers"
-	"insightful/dtos"
+	"insightful/src/apis/controllers"
+	"insightful/src/apis/dtos"
 	"log"
 	"net/http"
 	"os"
@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	RouterWSPrefix = "/insightful"
+	RouterWSPrefix = "/apis"
 )
 
 type App struct {

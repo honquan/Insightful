@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"insightful/dtos"
+	"insightful/src/apis/dtos"
 	"net/http"
 )
 
