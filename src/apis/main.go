@@ -26,5 +26,5 @@ func main() {
 	a := router.App{}
 	a.InitRouter()
 
-	a.Run("127.0.0.1:8899")
+	a.Run(":8888")
 }
