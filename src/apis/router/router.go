@@ -26,9 +26,13 @@ func (a *App) InitRouter() {
 	// creates a new instance of a mux router
 	a.Router = mux.NewRouter().StrictSlash(true)
 
-	// add router ws controller get
+	// add router health check controller
+	healthController := &controllers.HealthController{}
+	a.Router.HandleFunc(fmt.Sprintf("%v/health-check", RouterWSPrefix), healthController.HealthCheck).Methods(http.MethodGet)
+
+	// add router ws controller
 	wsController := &controllers.WsController{}
-	a.Router.HandleFunc(fmt.Sprintf("%v/ws/get", RouterWSPrefix), wsController.WsGet).Methods(http.MethodGet)
+	a.Router.HandleFunc(fmt.Sprintf("%v/ws/worker", RouterWSPrefix), wsController.WsWorker).Methods(http.MethodPost)
 
 	// register middleware
 	a.Router.Use(a.recoverPanicMiddleware)

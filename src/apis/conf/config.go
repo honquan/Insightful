@@ -22,6 +22,9 @@ type Config struct {
 	DBMysqlMaxOpenConns int    `env:"DB_MYSQL_MAXOPENCONNS" default:"4"`
 
 	LogLevel string `env:"LOG_LEVEL" default:"INFO"`
+
+	MaxWorker int `env:"MAX_WORKER" default:"3"`
+	MaxQueue  int `env:"MAX_QUEUE" default:"20"`
 }
 
 // EnvConfig save config from system parameters
