@@ -17,7 +17,7 @@ type WsController struct {
 
 func (s *WsController) WsWorker(w http.ResponseWriter, r *http.Request) {
 	log.Println("Start ws worker")
-	worker.NewDispatcher(conf.EnvConfig.MaxWorker, s).Run()
+	d := worker.NewDispatcher(conf.EnvConfig.MaxWorker).AppendCallbackWorker(s.FireWorker).Run()
 
 	// Read the body into a string for json decoding
 	var content = &dtos.WsPayload{}
@@ -29,8 +29,7 @@ func (s *WsController) WsWorker(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Push the work onto the queue.
-	worker.JobQueue = make(chan worker.Job, conf.EnvConfig.MaxQueue)
-	worker.JobQueue <- worker.Job{Payload: *content}
+	d.Submit(*content)
 
 	s.ServeJSONWithCode(w, http.StatusOK, &dtos.HttpResponse{
 		Meta: &dtos.MetaResp{

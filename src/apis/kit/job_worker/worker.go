@@ -4,10 +4,6 @@ import (
 	"log"
 )
 
-type WorkerHandler interface {
-	FireWorker(job Job) error
-}
-
 // Job represents the job to be run
 type Job struct {
 	Payload interface{}
@@ -16,17 +12,20 @@ type Job struct {
 // A buffered channel that we can send work requests on.
 var JobQueue chan Job
 
+// Callback function fire after recieve Job
+type WorkerInstanceFunc func(job Job) error
+
 // Worker represents the worker that executes the job
 type Worker struct {
-	WorkerInc  WorkerHandler
+	WorkerFunc WorkerInstanceFunc
 	WorkerPool chan chan Job
 	JobChannel chan Job
 	quit       chan bool
 }
 
-func NewWorker(workerPool chan chan Job, WorkerInc WorkerHandler) Worker {
+func NewWorker(workerPool chan chan Job, WorkerFunc WorkerInstanceFunc) Worker {
 	return Worker{
-		WorkerInc:  WorkerInc,
+		WorkerFunc: WorkerFunc,
 		WorkerPool: workerPool,
 		JobChannel: make(chan Job),
 		quit:       make(chan bool)}
@@ -42,8 +41,13 @@ func (w Worker) Start() {
 
 			select {
 			case job := <-w.JobChannel:
+				if w.WorkerFunc == nil {
+					log.Printf("Callback worker func can not be nil")
+					continue
+				}
+
 				// we have received a work request.
-				if err := w.WorkerInc.FireWorker(job); err != nil {
+				if err := w.WorkerFunc(job); err != nil {
 					log.Printf("Error when fire worker: %s", err.Error())
 				}
 

@@ -2,6 +2,8 @@ package services
 
 import (
 	"go.uber.org/dig"
+	"insightful/src/apis/conf"
+	worker "insightful/src/apis/kit/job_worker"
 )
 
 // serviceContainer is a global ServiceProvider.
@@ -9,6 +11,10 @@ var serviceContainer *dig.Container
 
 func InitServices() {
 	container := dig.New()
+
+	_ = container.Provide(func() *worker.Dispatcher {
+		return worker.NewDispatcher(conf.EnvConfig.MaxWorker).Run()
+	})
 
 	serviceContainer = container
 }

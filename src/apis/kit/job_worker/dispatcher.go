@@ -2,29 +2,39 @@ package job_worker
 
 import (
 	"fmt"
+	"insightful/src/apis/conf"
 	"log"
 )
 
 type Dispatcher struct {
-	WorkerInc  WorkerHandler
+	WorkerInc WorkerInstanceFunc
 	// A pool of workers channels that are registered with the dispatcher
 	maxWorkers int
 	WorkerPool chan chan Job
 }
 
-func NewDispatcher(maxWorkers int, WorkerInc WorkerHandler) *Dispatcher {
+func NewDispatcher(maxWorkers int) *Dispatcher {
 	pool := make(chan chan Job, maxWorkers)
-	return &Dispatcher{WorkerPool: pool, maxWorkers: maxWorkers, WorkerInc: WorkerInc}
+	return &Dispatcher{
+		WorkerPool: pool,
+		maxWorkers: maxWorkers,
+	}
 }
 
-func (d *Dispatcher) Run() {
+func (d *Dispatcher) AppendCallbackWorker(workerInc WorkerInstanceFunc) *Dispatcher {
+	d.WorkerInc = workerInc
+	return d
+}
+
+func (d *Dispatcher) Run() *Dispatcher {
 	// starting n number of workers
 	for i := 0; i < d.maxWorkers; i++ {
 		worker := NewWorker(d.WorkerPool, d.WorkerInc)
 		worker.Start()
 	}
-
 	go d.dispatch()
+
+	return d
 }
 
 func (d *Dispatcher) dispatch() {
@@ -45,4 +55,9 @@ func (d *Dispatcher) dispatch() {
 			}(job)
 		}
 	}
+}
+
+func (d *Dispatcher) Submit(data interface{}) {
+	JobQueue = make(chan Job, conf.EnvConfig.MaxQueue)
+	JobQueue <- Job{Payload: data}
 }
