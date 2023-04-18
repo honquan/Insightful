@@ -1,45 +1,92 @@
 package controllers
 
 import (
-	"encoding/json"
-	"fmt"
-	"insightful/src/apis/conf"
-	"insightful/src/apis/dtos"
-	worker "insightful/src/apis/kit/job_worker"
-	"io"
+	"github.com/gocraft/work"
+	"github.com/gorilla/websocket"
+	go_worker "insightful/src/apis/pkg/worker"
 	"log"
 	"net/http"
+	"time"
 )
 
 type WsController struct {
 	BaseController
 }
 
-func (s *WsController) WsWorker(w http.ResponseWriter, r *http.Request) {
-	log.Println("Start ws worker")
-	d := worker.NewDispatcher(conf.EnvConfig.MaxWorker).AppendCallbackWorker(s.FireWorker).Run()
-
-	// Read the body into a string for json decoding
-	var content = &dtos.WsPayload{}
-	err := json.NewDecoder(io.LimitReader(r.Body, 2048)).Decode(&content)
-	if err != nil {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	// Push the work onto the queue.
-	d.Submit(*content)
-
-	s.ServeJSONWithCode(w, http.StatusOK, &dtos.HttpResponse{
-		Meta: &dtos.MetaResp{
-			Code:    http.StatusOK,
-			Message: "Ok",
-		},
-	})
+// We'll need to define an Upgrader
+// this will require a Read and Write buffer size
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
 }
 
-func (s *WsController) FireWorker(job worker.Job) error {
-	fmt.Printf("%+v\n", job)
-	return nil
+func (s *WsController) WebsocketWorker(w http.ResponseWriter, r *http.Request) {
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+
+	// upgrade this connection to a WebSocket
+	// connection
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+	}
+	defer ws.Close()
+
+	// helpful log statement to show connections
+	log.Println("Client Connected")
+	err = ws.WriteMessage(1, []byte("Hi Client!"))
+	if err != nil {
+		log.Println(err)
+	}
+
+	// listen indefinitely for new messages coming
+	// through on our WebSocket connection
+	readerWithGoCraft(ws)
+	//readerWithGoWorker(ws)
+}
+
+// define a reader which will listen for
+// new messages being sent to our WebSocket
+// endpoint
+func readerWithGoCraft(conn *websocket.Conn) {
+	for {
+		// read in a message
+		messageType, p, err := conn.ReadMessage()
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		// print out that message for clarity
+		log.Println("Client said: ", string(p))
+		// enqueue go craft
+		enqueueJobCraft(
+			"saveCoordinateCassandra",
+			work.Q{"message": string(p)},
+		)
+
+		if err := conn.WriteMessage(messageType, p); err != nil {
+			log.Println(err)
+			return
+		}
+
+	}
+}
+
+func readerWithGoWorker(conn *websocket.Conn) {
+	for {
+		// read in a message
+		messageType, p, err := conn.ReadMessage()
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		// print out that message for clarity
+		log.Println("Client said: ", string(p))
+		go_worker.AddJob("Sample", time.Now().UTC(), string(p))
+
+		if err := conn.WriteMessage(messageType, p); err != nil {
+			log.Println(err)
+			return
+		}
+
+	}
 }

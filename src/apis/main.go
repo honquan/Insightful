@@ -1,7 +1,9 @@
 package main
 
 import (
+	"insightful/src/apis/pkg/worker"
 	"insightful/src/apis/router"
+	"log"
 )
 
 func init() {
@@ -22,9 +24,16 @@ func init() {
 }
 
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 	a := router.App{}
+	// init router
 	a.InitRouter()
+	// run worker go worker
+	go worker.RunGoWorker()
 
-	//a.Run(":8888")
-	a.Run("127.0.0.1:8889")
+	// run go craft
+	go worker.RunGoCraft()
+
+	// run
+	a.Run("127.0.0.1:8899")
 }

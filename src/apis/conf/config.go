@@ -17,7 +17,7 @@ type Config struct {
 	DBMysqlPassword     string `env:"DB_MYSQL_PASSWORD" default:"root"`
 	DBMysqlHost         string `env:"DB_MYSQL_HOST" default:"127.0.0.1"`
 	DBMysqlPort         string `env:"DB_MYSQL_PORT" default:"localhost"`
-	DBMysqlName         string `env:"DB_MYSQL_NAME" default:"demo"`
+	DBMysqlName         string `env:"DB_MYSQL_NAME" default:"insightfull"`
 	DBMysqlMaxIdleConns int    `env:"DB_MYSQL_MAXIDLECONNS" default:"1"`
 	DBMysqlMaxOpenConns int    `env:"DB_MYSQL_MAXOPENCONNS" default:"4"`
 
@@ -25,6 +25,11 @@ type Config struct {
 
 	MaxWorker int `env:"MAX_WORKER" default:"3"`
 	MaxQueue  int `env:"MAX_QUEUE" default:"20"`
+
+	RedisHost     string `env:"REDIS_HOST" default:"127.0.0.1"`
+	RedisPort     string `env:"REDIS_PORT" default:"6379"`
+	RedisDatabase int    `env:"REDIS_DATABASE" default:"0"`
+	RedisPassword string `env:"REDIS_PASSWORD" default:""`
 }
 
 // EnvConfig save config from system parameters
@@ -78,7 +83,7 @@ func init() {
 	}
 }
 
-//ParseEnvConfig Parse environment to config struct
+// ParseEnvConfig Parse environment to config struct
 func ParseEnvConfig(config interface{}) error {
 	v := reflect.ValueOf(config).Elem()
 	t := v.Type()
