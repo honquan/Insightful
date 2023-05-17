@@ -3,7 +3,7 @@ package services
 import (
 	"go.uber.org/dig"
 	"insightful/src/apis/conf"
-	worker "insightful/src/apis/kit/job_worker"
+	worker "insightful/src/apis/kit/custom_worker"
 )
 
 // serviceContainer is a global ServiceProvider.

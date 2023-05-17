@@ -1,9 +1,8 @@
-package job_worker
+package custom_worker
 
 import (
 	"fmt"
-	"insightful/src/apis/conf"
-	"log"
+	"insightful/src/apis/dtos"
 )
 
 type Dispatcher struct {
@@ -43,7 +42,6 @@ func (d *Dispatcher) dispatch() {
 
 		select {
 		case job := <-JobQueue:
-			log.Printf("a dispatcher request received")
 			// a job request has been received
 			go func(job Job) {
 				// try to obtain a worker job channel that is available.
@@ -57,7 +55,6 @@ func (d *Dispatcher) dispatch() {
 	}
 }
 
-func (d *Dispatcher) Submit(data interface{}) {
-	JobQueue = make(chan Job, conf.EnvConfig.MaxQueue)
+func Submit(data dtos.WsPayload) {
 	JobQueue <- Job{Payload: data}
 }

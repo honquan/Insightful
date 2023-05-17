@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 	"insightful/src/apis/conf"
 	"insightful/src/apis/controllers"
 	"insightful/src/apis/dtos"
@@ -30,9 +31,23 @@ func (a *App) InitRouter() {
 	healthController := &controllers.HealthController{}
 	a.Router.HandleFunc(fmt.Sprintf("%v/health-check", RouterWSPrefix), healthController.HealthCheck).Methods(http.MethodGet)
 
-	// add router ws controller
+	// custom job worker
+	customJobController := &controllers.CustomJobController{}
+	a.Router.HandleFunc(fmt.Sprintf("%v/custom/worker", RouterWSPrefix), customJobController.WorkerJobCustom).Methods(http.MethodPost)
+
+	// add router websocket controller
 	wsController := &controllers.WsController{}
-	a.Router.HandleFunc(fmt.Sprintf("%v/ws/worker", RouterWSPrefix), wsController.WsWorker).Methods(http.MethodPost)
+	a.Router.HandleFunc(fmt.Sprintf("%v/ws/worker", RouterWSPrefix), wsController.WebsocketWorker).Methods(http.MethodGet)
+
+	// normal job
+	normalController := &controllers.NormalJobController{}
+	a.Router.HandleFunc(fmt.Sprintf("%v/job-normal/go-worker", RouterWSPrefix), normalController.NormalJobWorkerGoWorker).Methods(http.MethodPost)
+	a.Router.HandleFunc(fmt.Sprintf("%v/job-normal/craft-worker", RouterWSPrefix), normalController.NormalJobWorkerGoCraft).Methods(http.MethodPost)
+
+	// job
+	jobController := &controllers.JobController{}
+	a.Router.HandleFunc(fmt.Sprintf("%v/job/worker-goworker", RouterWSPrefix), jobController.WorkerGoWorker).Methods(http.MethodGet)
+	a.Router.HandleFunc(fmt.Sprintf("%v/job/worker-gocraft", RouterWSPrefix), jobController.WorkerGoCraft).Methods(http.MethodGet)
 
 	// register middleware
 	a.Router.Use(a.recoverPanicMiddleware)
@@ -46,16 +61,21 @@ func (a *App) InitDatabase() {
 	mysqlPort := conf.EnvConfig.DBMysqlPort
 	mysqlDBName := conf.EnvConfig.DBMysqlName
 
-	a.MysqlDB, err = gorm.Open("mysql", fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8&parseTime=True", mysqlUsername, mysqlPassword, mysqlHost, mysqlPort, mysqlDBName))
+	dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8mb4&parseTime=True", mysqlUsername, mysqlPassword, mysqlHost, mysqlPort, mysqlDBName)
+	a.MysqlDB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(fmt.Sprintf("Failed to connect database: %v", err))
 	}
 
-	a.MysqlDB.DB().SetConnMaxLifetime(30 * time.Minute)
+	sqlDB, err := a.MysqlDB.DB()
+	if err != nil {
+		panic(fmt.Sprintf("Failed to connect database: %v", err))
+	}
+	sqlDB.SetConnMaxLifetime(30 * time.Minute)
 
 	// set max idle and max open conns
-	a.MysqlDB.DB().SetMaxIdleConns(conf.EnvConfig.DBMysqlMaxIdleConns)
-	a.MysqlDB.DB().SetMaxOpenConns(conf.EnvConfig.DBMysqlMaxOpenConns)
+	sqlDB.SetMaxIdleConns(conf.EnvConfig.DBMysqlMaxIdleConns)
+	sqlDB.SetMaxOpenConns(conf.EnvConfig.DBMysqlMaxOpenConns)
 }
 
 func (a *App) Run(addr string) {

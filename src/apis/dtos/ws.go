@@ -1,7 +1,7 @@
 package dtos
 
 type WsPayload struct {
-	UserId    int64      `json:"user_id"`
+	PageId    int64      `json:"page_id"`
 	Positions []Position `json:"positions"`
 }
 
