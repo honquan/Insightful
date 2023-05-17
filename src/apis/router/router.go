@@ -29,7 +29,7 @@ func (a *App) InitRouter() {
 
 	// add router health check controller
 	healthController := &controllers.HealthController{}
-	a.Router.HandleFunc(fmt.Sprintf("%v/health-check", RouterWSPrefix), healthController.HealthCheck).Methods(http.MethodGet)
+	a.Router.HandleFunc(fmt.Sprintf("%v/health", RouterWSPrefix), healthController.HealthCheck).Methods(http.MethodGet)
 
 	// custom job worker
 	customJobController := &controllers.CustomJobController{}
