@@ -23,8 +23,8 @@ type Config struct {
 
 	LogLevel string `env:"LOG_LEVEL" default:"INFO"`
 
-	MaxWorker int `env:"MAX_WORKER" default:"3"`
-	MaxQueue  int `env:"MAX_QUEUE" default:"20"`
+	MaxWorker int `env:"MAX_WORKER" default:"300"`
+	MaxQueue  int `env:"MAX_QUEUE" default:"200"`
 
 	RedisHost     string `env:"REDIS_HOST" default:"127.0.0.1"`
 	RedisPort     string `env:"REDIS_PORT" default:"6379"`

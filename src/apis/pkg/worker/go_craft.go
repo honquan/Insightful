@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/gocraft/work"
 	"github.com/gomodule/redigo/redis"
-	"log"
+	"insightful/src/apis/pkg/enum"
 	"os"
 	"os/signal"
 	"time"
@@ -30,7 +30,7 @@ func RunGoCraft() {
 	// 10 is the max concurrency
 	// "my_app_namespace" is the Redis namespace
 	// redisPool is a Redis pool
-	pool := work.NewWorkerPool(Context{}, 1, "my_app_namespace", RedisPool)
+	pool := work.NewWorkerPool(Context{}, 10, "my_app_namespace", RedisPool)
 
 	// Add middleware that will be executed for each job
 	//pool.Middleware((*Context).Log)
@@ -38,7 +38,7 @@ func RunGoCraft() {
 
 	// Map the name of jobs to handler functions
 	pool.Job("send_email", (*Context).SendEmail)
-	pool.Job("saveCoordinateCassandra", (*Context).SaveCoordinateCassandra)
+	pool.Job(enum.JobNameCoordinate, (*Context).saveCoordinate)
 
 	// Customize options:
 	pool.JobWithOptions("export", work.JobOptions{Priority: 10, MaxFails: 1}, (*Context).Export)
@@ -74,6 +74,7 @@ func (c *Context) FindCustomer(job *work.Job, next work.NextMiddlewareFunc) erro
 
 func (c *Context) SendEmail(job *work.Job) error {
 	time.Sleep(1000 * time.Millisecond)
+	_ = job.ArgString("message")
 	// Extract arguments:
 	if err := job.ArgError(); err != nil {
 		return err
@@ -85,12 +86,18 @@ func (c *Context) SendEmail(job *work.Job) error {
 	return nil
 }
 
-func (c *Context) SaveCoordinateCassandra(job *work.Job) error {
-	log.Println("SaveCoordinateCassandra message: ", job.ArgString("message"))
+func (c *Context) Export(job *work.Job) error {
+	fmt.Println("Export: ", job)
 	return nil
 }
 
-func (c *Context) Export(job *work.Job) error {
-	fmt.Println("Export: ", job)
+func (c *Context) saveCoordinate(job *work.Job) error {
+	// Extract arguments:
+	if err := job.ArgError(); err != nil {
+		return err
+	}
+
+	// Go ahead and proccess
+
 	return nil
 }

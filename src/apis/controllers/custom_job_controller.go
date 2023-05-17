@@ -3,9 +3,8 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"insightful/src/apis/conf"
 	"insightful/src/apis/dtos"
-	worker "insightful/src/apis/kit/job_worker"
+	jobWorker "insightful/src/apis/kit/custom_worker"
 	"io"
 	"log"
 	"net/http"
@@ -16,9 +15,7 @@ type CustomJobController struct {
 }
 
 func (s *CustomJobController) WorkerJobCustom(w http.ResponseWriter, r *http.Request) {
-	log.Println("Start ws worker")
-	d := worker.NewDispatcher(conf.EnvConfig.MaxWorker).AppendCallbackWorker(s.FireWorker).Run()
-
+	log.Println("Receive request")
 	// Read the body into a string for json decoding
 	var content = &dtos.WsPayload{}
 	err := json.NewDecoder(io.LimitReader(r.Body, 2048)).Decode(&content)
@@ -29,7 +26,11 @@ func (s *CustomJobController) WorkerJobCustom(w http.ResponseWriter, r *http.Req
 	}
 
 	// Push the work onto the queue.
-	d.Submit(*content)
+	//work := jobWorker.Job{Payload: content}
+	//jobWorker.JobQueue <- work
+
+	// Push the work onto the queue.
+	jobWorker.Submit(*content)
 
 	s.ServeJSONWithCode(w, http.StatusOK, &dtos.HttpResponse{
 		Meta: &dtos.MetaResp{
@@ -39,7 +40,7 @@ func (s *CustomJobController) WorkerJobCustom(w http.ResponseWriter, r *http.Req
 	})
 }
 
-func (s *CustomJobController) FireWorker(job worker.Job) error {
+func (s *CustomJobController) FireWorker(job jobWorker.Job) error {
 	fmt.Printf("%+v\n", job)
 	return nil
 }

@@ -1,7 +1,8 @@
 package main
 
 import (
-	"insightful/src/apis/pkg/worker"
+	"insightful/src/apis/conf"
+	customWorker "insightful/src/apis/kit/custom_worker"
 	"insightful/src/apis/router"
 	"log"
 )
@@ -25,14 +26,24 @@ func init() {
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
-	a := router.App{}
+
+	// run custom job worker without redis
+	customWorker.JobQueue = make(chan customWorker.Job, conf.EnvConfig.MaxWorker)
+	dispatcher := customWorker.NewDispatcher(conf.EnvConfig.MaxWorker)
+	dispatcher.Run()
+
+	// run muster
+	//muster.Run()
+
 	// init router
+	a := router.App{}
 	a.InitRouter()
+
 	// run worker go worker
-	go worker.RunGoWorker()
+	//go worker.RunGoWorker()
 
 	// run go craft
-	go worker.RunGoCraft()
+	//go worker.RunGoCraft()
 
 	// run
 	a.Run("127.0.0.1:8899")

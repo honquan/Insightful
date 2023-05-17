@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/jrallison/go-workers"
 	"insightful/src/apis/conf"
-	"log"
+	"insightful/src/apis/pkg/enum"
 	"math/rand"
 	"strconv"
 	"time"
@@ -16,7 +16,7 @@ func RunGoWorker() {
 		// location of redis instance
 		"server": fmt.Sprintf("%v:%v", conf.EnvConfig.RedisHost, conf.EnvConfig.RedisPort),
 		// instance of the database
-		"database": "0",
+		"database": "10",
 		// number of connections to keep open with redis
 		"pool": "100",
 		// unique process id for this instance of workers (for proper recovery of inprogress jobs on crash)
@@ -24,23 +24,22 @@ func RunGoWorker() {
 	})
 
 	// register job types and the function to execute them
-	workers.Process("Sample", SampleWorker, 3)   // (queue name, Executor/Worker, concurrency
-	workers.Process("Sample2", SampleWorker2, 3) // (queue name, Executor/Worker, concurrency
+	workers.Process("Sample", SampleWorker, 3)                     // (queue name, Executor/Worker, concurrency
+	workers.Process(enum.JobNameCoordinate, CoordinateWorker, 100) // (queue name, Executor/Worker, concurrency
 	go workers.StatsServer(8890)
 	workers.Run()
 }
 
 func SampleWorker(message *workers.Msg) {
-	//time.Sleep(3000 * time.Millisecond)
+	//time.Sleep(1000 * time.Millisecond)
 	_, _ = message.Args().Array()
 	//log.Println("Working sample 1 on job, arg: %s, msg: %s", args, message.Jid())
 	return
 }
 
-func SampleWorker2(message *workers.Msg) {
+func CoordinateWorker(message *workers.Msg) {
 	//time.Sleep(3000 * time.Millisecond)
-	args, _ := message.Args().Array()
-	log.Println("Working sample 2 on job, arg: %s, msg: %s", args, message.Jid())
+	_, _ = message.Args().Array()
 	return
 }
 

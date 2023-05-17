@@ -41,7 +41,7 @@ func (a *App) InitRouter() {
 
 	// normal job
 	normalController := &controllers.NormalJobController{}
-	a.Router.HandleFunc(fmt.Sprintf("%v/job-normal/go-worker", RouterWSPrefix), normalController.NormalJobWorkerGoWorker).Methods(http.MethodGet)
+	a.Router.HandleFunc(fmt.Sprintf("%v/job-normal/go-worker", RouterWSPrefix), normalController.NormalJobWorkerGoWorker).Methods(http.MethodPost)
 	a.Router.HandleFunc(fmt.Sprintf("%v/job-normal/craft-worker", RouterWSPrefix), normalController.NormalJobWorkerGoCraft).Methods(http.MethodPost)
 
 	// job
