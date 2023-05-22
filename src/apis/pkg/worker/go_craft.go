@@ -1,10 +1,13 @@
 package worker
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gocraft/work"
 	"github.com/gomodule/redigo/redis"
+	"insightful/src/apis/dtos"
 	"insightful/src/apis/pkg/enum"
+	"log"
 	"os"
 	"os/signal"
 	"time"
@@ -96,6 +99,15 @@ func (c *Context) saveCoordinate(job *work.Job) error {
 	if err := job.ArgError(); err != nil {
 		return err
 	}
+
+	var data dtos.WsPayload
+	err := json.Unmarshal([]byte(job.Args[enum.GoCraftMessage].(string)), &data)
+	if err != nil {
+		return err
+	}
+
+	// print out that message for clarity
+	log.Println("Client: ", data)
 
 	// Go ahead and proccess
 

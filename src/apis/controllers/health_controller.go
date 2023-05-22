@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"insightful/src/apis/dtos"
 	"math/rand"
 	"net/http"
@@ -9,6 +11,10 @@ import (
 	"strings"
 	"time"
 )
+
+type Build struct {
+	Name string `json:"name"`
+}
 
 type HealthController struct {
 	BaseController
@@ -25,14 +31,24 @@ func (s *HealthController) HealthCheck(w http.ResponseWriter, req *http.Request)
 }
 
 func (s *HealthController) BuildData(w http.ResponseWriter, req *http.Request) {
-	f, err := os.Create("datatest.sql")
+	var build Build
+	err := json.NewDecoder(req.Body).Decode(&build)
+
+	name := mux.Vars(req)["name"]
+	fmt.Println(name)
+
+	f, err := os.Create(fmt.Sprintf("%v.sql", build.Name))
 
 	if err != nil {
 	}
 
+	n := 1000000
+
 	defer f.Close()
 
-	for x := 1; x <= 100; x++ {
+	first := true
+
+	for x := 1; x <= n; x++ {
 		randomIndexFirst := rand.Intn(len(arrFirstName))
 		randomIndexLast := rand.Intn(len(arrLastName))
 		randomFisrt := arrFirstName[randomIndexFirst]
@@ -46,11 +62,22 @@ func (s *HealthController) BuildData(w http.ResponseWriter, req *http.Request) {
 		phone := fmt.Sprintf("%v %v", reagionPhone[randomIndexReagionPhone], StringWithCharsetInt(8, charsetInt))
 
 		email := fmt.Sprintf("%v%v%v@gmail.com", strings.ToLower(randomFisrt), strings.ToLower(randomLast), randomInt)
-		str := fmt.Sprintf("insert into insightfull.user (first_name, last_name, email, phone) values ('%v', '%v', '%v', '%v');", randomFisrt, randomLast, email, phone)
+		str := ""
+		if first {
+			str = fmt.Sprintf("insert into \"user\" (first_name, last_name, email, phone) values ('%v', '%v', '%v', '%v'),", randomFisrt, randomLast, email, phone)
+		}
+		if !first && x < n {
+			str = fmt.Sprintf("('%v', '%v', '%v', '%v'),", randomFisrt, randomLast, email, phone)
+		}
+		if !first && x == n {
+			str = fmt.Sprintf("('%v', '%v', '%v', '%v');", randomFisrt, randomLast, email, phone)
+		}
+
 		_, err := f.WriteString(str + "\n")
 
 		if err != nil {
 		}
+		first = false
 	}
 
 	fmt.Println("done")

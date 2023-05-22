@@ -40,5 +40,14 @@
         socket.send(input.value);
         input.value = "";
     }
+
+    function printMousePos(event) {
+        document.body.textContent =
+            "clientX: " + event.clientX +
+            " - clientY: " + event.clientY;
+        console.log(document.body.textContent)
+    }
+
+    document.addEventListener("click", printMousePos);
 </script>
 </html>

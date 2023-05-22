@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/gocraft/work"
 	"github.com/gorilla/websocket"
+	"insightful/src/apis/pkg/enum"
 	go_worker "insightful/src/apis/pkg/worker"
 	"log"
 	"net/http"
@@ -55,12 +56,11 @@ func readerWithGoCraft(conn *websocket.Conn) {
 			log.Println(err)
 			return
 		}
-		// print out that message for clarity
-		log.Println("Client said: ", string(p))
+
 		// enqueue go craft
 		enqueueJobCraft(
-			"saveCoordinateCassandra",
-			work.Q{"message": string(p)},
+			enum.JobNameCoordinate,
+			work.Q{enum.GoCraftMessage: string(p)},
 		)
 
 		if err := conn.WriteMessage(messageType, p); err != nil {
