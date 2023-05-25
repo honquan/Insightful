@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/gocraft/work"
 	"github.com/gomodule/redigo/redis"
+	"insightful/src/apis/conf"
 	"insightful/src/apis/kit/custom_worker"
 	"insightful/src/apis/pkg/enum"
 	"log"
@@ -20,7 +21,7 @@ var RedisPool = &redis.Pool{
 	MaxIdle:   5,
 	Wait:      true,
 	Dial: func() (redis.Conn, error) {
-		return redis.Dial("tcp", ":6379")
+		return redis.Dial("tcp", fmt.Sprintf(":%v", conf.EnvConfig.RedisPort))
 	},
 }
 
