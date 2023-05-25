@@ -2,7 +2,6 @@ package custom_worker
 
 import (
 	"github.com/facebookgo/muster"
-	"insightful/src/apis/dtos"
 	"log"
 	"time"
 )
@@ -32,27 +31,32 @@ func (s *CoordinateClient) Stop() error {
 }
 
 // The CoordinateClient provides a typed Add method which enqueues the work.
-func (s *CoordinateClient) Add(item dtos.WsPayload) {
+func (s *CoordinateClient) Add(item interface{}) {
 	s.muster.Work <- item
 }
 
 // The batch is the collection of items that will be dispatched together.
 type batch struct {
 	Client *CoordinateClient
-	Items  []dtos.WsPayload
+	Items  []interface{}
 }
 
 // The batch provides an untyped Add to satisfy the muster.Batch interface. As
 // is the case here, the Batch implementation is internal to the user of muster
 // and not exposed to the users of ShoppingClient.
 func (b *batch) Add(item interface{}) {
-	b.Items = append(b.Items, item.(dtos.WsPayload))
+	b.Items = append(b.Items, item)
 }
 
 // Once a Batch is ready, it will be Fired. It must call notifier.Done once the
 // batch has been processed.
 func (b *batch) Fire(notifier muster.Notifier) {
-	defer notifier.Done()
-	log.Println("Delivery", b.Items)
+	//defer notifier.Done()
+	log.Println(" ==============================================================================================")
+	log.Println(" ==============================================================================================")
+	log.Println(" ==============================================================================================")
+	log.Println(" ==============================================================================================")
+	log.Println(" ==============================================================================================")
+	log.Println("Delivery ===================", b.Items)
 	//os.Stdout.Sync()
 }

@@ -26,7 +26,7 @@ type Config struct {
 	MaxWorker int `env:"MAX_WORKER" default:"300"`
 	MaxQueue  int `env:"MAX_QUEUE" default:"200"`
 
-	RedisHost     string `env:"REDIS_HOST" default:"127.0.0.1"`
+	RedisHost     string `env:"REDIS_HOST" default:"0.0.0.0"`
 	RedisPort     string `env:"REDIS_PORT" default:"6379"`
 	RedisDatabase int    `env:"REDIS_DATABASE" default:"0"`
 	RedisPassword string `env:"REDIS_PASSWORD" default:""`

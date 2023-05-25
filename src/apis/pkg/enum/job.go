@@ -7,3 +7,7 @@ const (
 const (
 	JobNameCoordinate = "COORDINATE"
 )
+
+const (
+	CoordinateNameSpace = "TRACKING_COORDINATE"
+)

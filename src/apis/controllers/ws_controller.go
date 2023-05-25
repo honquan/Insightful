@@ -21,7 +21,7 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func (s *WsController) WebsocketWorker(w http.ResponseWriter, r *http.Request) {
+func (s *WsController) WebsocketWorkerGoCraft(w http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
 	// upgrade this connection to a WebSocket
@@ -42,7 +42,29 @@ func (s *WsController) WebsocketWorker(w http.ResponseWriter, r *http.Request) {
 	// listen indefinitely for new messages coming
 	// through on our WebSocket connection
 	readerWithGoCraft(ws)
-	//readerWithGoWorker(ws)
+}
+
+func (s *WsController) WebsocketWorkerGoWorker(w http.ResponseWriter, r *http.Request) {
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+
+	// upgrade this connection to a WebSocket
+	// connection
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+	}
+	defer ws.Close()
+
+	// helpful log statement to show connections
+	log.Println("Client Connected")
+	err = ws.WriteMessage(1, []byte("Hi Client!"))
+	if err != nil {
+		log.Println(err)
+	}
+
+	// listen indefinitely for new messages coming
+	// through on our WebSocket connection
+	readerWithGoWorker(ws)
 }
 
 // define a reader which will listen for
@@ -60,7 +82,7 @@ func readerWithGoCraft(conn *websocket.Conn) {
 		// enqueue go craft
 		enqueueJobCraft(
 			enum.JobNameCoordinate,
-			work.Q{enum.GoCraftMessage: string(p)},
+			work.Q{enum.GoCraftMessage: p},
 		)
 
 		if err := conn.WriteMessage(messageType, p); err != nil {
@@ -79,9 +101,8 @@ func readerWithGoWorker(conn *websocket.Conn) {
 			log.Println(err)
 			return
 		}
-		// print out that message for clarity
-		log.Println("Client said: ", string(p))
-		go_worker.AddJob("Sample", time.Now().UTC(), string(p))
+
+		go_worker.AddJob(enum.JobNameCoordinate, time.Now().UTC(), p)
 
 		if err := conn.WriteMessage(messageType, p); err != nil {
 			log.Println(err)

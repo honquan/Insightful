@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" id="html_rea">
 <head>
     <!-- basic -->
     <meta charset="utf-8">
@@ -31,7 +31,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.css"
           media="screen">
 </head>
-<body onmousemove="getMouseOverPos(event)" onmouseout="stopTracking()">
+<body id="rea_body" onmousemove="getMouseOverPosition(event)" onmouseout="//stopTracking()">
 <!--header section start -->
 <!--header section start -->
 <div class="header_section">
@@ -366,38 +366,83 @@
 </body>
 
 <script>
-    var socket = new WebSocket("ws://localhost:8899/apis/ws/worker");
+    // var socket = new WebSocket("ws://localhost:8899/apis/ws/worker-craft");
+    //
+    // // send mouseover event
+    // function getMouseOverPosition(e) {
+    //     mouseOverObj = ["hover", "1", "https://rea.com/index", [[e.clientX, e.clientY]]]
+    //
+    //     //socket.send(JSON.stringify(mouseOverObj))
+    // }
+    // function stopTracking() {
+    //     //document.getElementById("displayArea").innerHTML="";
+    // }
+    //
+    // // send click event
+    // function getMouseClickPosition(e) {
+    //     clickObj = ["click", "1", "https://rea.com/index", [[e.clientX, e.clientY]]]
+    //
+    //     socket.send(JSON.stringify(clickObj))
+    // }
+    // document.addEventListener("click", getMouseClickPosition);
+</script>
 
-    // send mouseover event
-    function getMouseOverPos(e) {
-        mouseOverObj = {
-            "event": "hover",
-            "user_id": 1,
-            "page": "https://rea.com/index",
-            "positions": {
-                "x": e.clientX,
-                "y": e.clientY
-            }
+<script>
+    // var leng = 100;
+    // var arrCoordinate = [];
+    // let count=0;
+    // let time
+    //
+    // const timer = setInterval(()=>{
+    //     arrCoordinate.push(1);
+    //     count++;
+    //     if(count==leng){
+    //         console.log("need reset")
+    //         count=0;
+    //     }
+    //
+    // },3000)
+</script>
+
+<script>
+    // define socket
+    var socket = new WebSocket("ws://localhost:8899/apis/ws/worker-go");
+
+    // define variable
+    var lengArrToPush = 100
+    var arrCoordinate = [];
+    var mouseOverObj = [];
+    var timeToPush = 2000;
+
+    // mouseover event
+    function getMouseOverPosition(e) {
+        if (arrCoordinate.length < lengArrToPush) {
+            arrCoordinate.push([e.clientX, e.clientY]);
         }
-        socket.send(JSON.stringify(mouseOverObj))
-    }
-    function stopTracking() {
-        //document.getElementById("displayArea").innerHTML="";
+        if (arrCoordinate.length === lengArrToPush) {
+            sendData();
+        }
     }
 
-    // send click event
-    function getMouseClickPos(e) {
-        clickObj = {
-            "event": "click",
-            "user_id": 1,
-            "page": "https://rea.com/index",
-            "positions": {
-                "x": e.clientX,
-                "y": e.clientY
-            }
+    // "check coordinate full or timeout" to send data
+    var timeleft = timeToPush;
+    setInterval(function(){
+        if(timeleft <= 0 || arrCoordinate.length === lengArrToPush){
+            sendData();
         }
-        socket.send(JSON.stringify(clickObj))
+        timeleft -= 100;
+    }, 100);
+
+    function sendData() {
+        timeleft = timeToPush;
+        if (arrCoordinate.length > 0) {
+            mouseOverObj = ["hover", "1", "https://rea.com/index", [arrCoordinate]];
+            arrCoordinate = [];
+
+            // send data websocket
+            console.log(mouseOverObj)
+            socket.send(JSON.stringify(mouseOverObj))
+        }
     }
-    document.addEventListener("click", getMouseClickPos);
 </script>
 </html>

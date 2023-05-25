@@ -1,11 +1,12 @@
 package worker
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/gocraft/work"
 	"github.com/gomodule/redigo/redis"
-	"insightful/src/apis/dtos"
+	"insightful/src/apis/kit/custom_worker"
 	"insightful/src/apis/pkg/enum"
 	"log"
 	"os"
@@ -23,6 +24,12 @@ var RedisPool = &redis.Pool{
 	},
 }
 
+var sm = &custom_worker.CoordinateClient{
+	MaxBatchSize:        100,
+	BatchTimeout:        5000 * time.Millisecond,
+	PendingWorkCapacity: 100,
+}
+
 type Context struct {
 	customerID int64
 }
@@ -31,20 +38,23 @@ func RunGoCraft() {
 	// Make a new pool. Arguments:
 	// Context{} is a struct that will be the context for the request.
 	// 10 is the max concurrency
-	// "my_app_namespace" is the Redis namespace
+	// "CoordinateNameSpace" is the Redis namespace
 	// redisPool is a Redis pool
-	pool := work.NewWorkerPool(Context{}, 10, "my_app_namespace", RedisPool)
+	pool := work.NewWorkerPool(Context{}, 100, enum.CoordinateNameSpace, RedisPool)
+
+	if err := sm.Start(); err != nil {
+		log.Printf("Error when start muster: ", err)
+	}
 
 	// Add middleware that will be executed for each job
 	//pool.Middleware((*Context).Log)
 	//pool.Middleware((*Context).FindCustomer)
 
 	// Map the name of jobs to handler functions
-	pool.Job("send_email", (*Context).SendEmail)
 	pool.Job(enum.JobNameCoordinate, (*Context).saveCoordinate)
 
 	// Customize options:
-	pool.JobWithOptions("export", work.JobOptions{Priority: 10, MaxFails: 1}, (*Context).Export)
+	//pool.JobWithOptions("export", work.JobOptions{Priority: 10, MaxFails: 1}, (*Context).Export)
 
 	// Start processing jobs
 	pool.Start()
@@ -75,41 +85,22 @@ func (c *Context) FindCustomer(job *work.Job, next work.NextMiddlewareFunc) erro
 	return next()
 }
 
-func (c *Context) SendEmail(job *work.Job) error {
-	time.Sleep(1000 * time.Millisecond)
-	_ = job.ArgString("message")
-	// Extract arguments:
-	if err := job.ArgError(); err != nil {
-		return err
-	}
-
-	// Go ahead and send the email...
-	// sendEmailTo(addr, subject)
-
-	return nil
-}
-
-func (c *Context) Export(job *work.Job) error {
-	fmt.Println("Export: ", job)
-	return nil
-}
-
 func (c *Context) saveCoordinate(job *work.Job) error {
 	// Extract arguments:
 	if err := job.ArgError(); err != nil {
 		return err
 	}
 
-	var data dtos.WsPayload
-	err := json.Unmarshal([]byte(job.Args[enum.GoCraftMessage].(string)), &data)
+	rawDecodedText, err := base64.StdEncoding.DecodeString(job.Args[enum.GoCraftMessage].(string))
+
+	var data interface{}
+	err = json.Unmarshal(rawDecodedText, &data)
 	if err != nil {
-		return err
+		fmt.Println("error:", err)
 	}
 
-	// print out that message for clarity
-	log.Println("Client: ", data)
-
 	// Go ahead and proccess
+	sm.Add(data)
 
 	return nil
 }

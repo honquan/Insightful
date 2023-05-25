@@ -38,7 +38,8 @@ func (a *App) InitRouter() {
 
 	// add router websocket controller
 	wsController := &controllers.WsController{}
-	a.Router.HandleFunc(fmt.Sprintf("%v/ws/worker", RouterWSPrefix), wsController.WebsocketWorker).Methods(http.MethodGet)
+	a.Router.HandleFunc(fmt.Sprintf("%v/ws/worker-craft", RouterWSPrefix), wsController.WebsocketWorkerGoCraft).Methods(http.MethodGet)
+	a.Router.HandleFunc(fmt.Sprintf("%v/ws/worker-go", RouterWSPrefix), wsController.WebsocketWorkerGoWorker).Methods(http.MethodGet)
 
 	// normal job
 	normalController := &controllers.NormalJobController{}

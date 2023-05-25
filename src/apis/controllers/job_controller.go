@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gocraft/work"
 	"insightful/src/apis/dtos"
+	"insightful/src/apis/pkg/enum"
 	go_worker "insightful/src/apis/pkg/worker"
 	"log"
 	"net/http"
@@ -40,14 +41,13 @@ func (s *JobController) WorkerGoCraft(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-var enqueuer = work.NewEnqueuer("my_app_namespace", go_worker.RedisPool)
+var enqueuer = work.NewEnqueuer(enum.CoordinateNameSpace, go_worker.RedisPool)
 
 func enqueueJobCraft(job string, payload work.Q) {
 	_, err := enqueuer.Enqueue(job, payload)
 	if err != nil {
 		log.Fatal(err)
 	}
-	//log.Println("Enqueued:", job, ", with Payload:", payload)
 }
 
 func enqueueEmail() {

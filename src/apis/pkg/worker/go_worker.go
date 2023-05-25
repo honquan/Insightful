@@ -1,6 +1,8 @@
 package worker
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"github.com/jrallison/go-workers"
 	"insightful/src/apis/conf"
@@ -9,6 +11,16 @@ import (
 	"strconv"
 	"time"
 )
+
+type MyLogger struct {
+}
+
+func (l *MyLogger) Println(v ...interface{}) {
+	// noop
+}
+func (l *MyLogger) Printf(fmt string, v ...interface{}) {
+	// noop
+}
 
 func RunGoWorker() {
 	// init go worker
@@ -23,23 +35,34 @@ func RunGoWorker() {
 		"process": strconv.Itoa(rand.Intn(10000)),
 	})
 
+	//workers.Middleware.Append(&myMiddleware{})
+	workers.Logger = &MyLogger{}
+
 	// register job types and the function to execute them
-	workers.Process("Sample", SampleWorker, 3)                     // (queue name, Executor/Worker, concurrency
 	workers.Process(enum.JobNameCoordinate, CoordinateWorker, 100) // (queue name, Executor/Worker, concurrency
+
+	// stats will be available at http://localhost:8890/stats
 	go workers.StatsServer(8890)
+
+	// Blocks until process is told to exit via unix signal
 	workers.Run()
 }
 
-func SampleWorker(message *workers.Msg) {
-	//time.Sleep(1000 * time.Millisecond)
-	_, _ = message.Args().Array()
-	//log.Println("Working sample 1 on job, arg: %s, msg: %s", args, message.Jid())
-	return
-}
-
 func CoordinateWorker(message *workers.Msg) {
-	//time.Sleep(3000 * time.Millisecond)
-	_, _ = message.Args().Array()
+	arr, err := message.Args().Array()
+	if err != nil {
+		return
+	}
+
+	rawDecodedText, err := base64.StdEncoding.DecodeString(arr[0].(string))
+	var data interface{}
+	err = json.Unmarshal(rawDecodedText, &data)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+
+	// Go ahead and proccess
+	sm.Add(data)
 	return
 }
 
