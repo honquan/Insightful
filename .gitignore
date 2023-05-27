@@ -9,6 +9,7 @@
 **/.idea
 **/.vscode
 **/.env
+**/html*
 
 # Test binary, built with `go test -c`
 *.test
