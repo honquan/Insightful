@@ -30,6 +30,10 @@ type Config struct {
 	RedisPort     string `env:"REDIS_PORT" default:"6379"`
 	RedisDatabase int    `env:"REDIS_DATABASE" default:"0"`
 	RedisPassword string `env:"REDIS_PASSWORD" default:""`
+
+	MongoURI          string `env:"MONGO_DB_URI" default:"mongodb://0.0.0.0:27017"`
+	MongoDatabaseName string `env:"MONGO_DB_NAME" default:"insightful"`
+	MongoDebug        bool   `env:"MONGO_DB_DEBUG"`
 }
 
 // EnvConfig save config from system parameters

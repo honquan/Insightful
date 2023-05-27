@@ -1,4 +1,4 @@
-package services
+package service
 
 import (
 	"go.uber.org/dig"
@@ -9,12 +9,14 @@ import (
 // serviceContainer is a global ServiceProvider.
 var serviceContainer *dig.Container
 
-func InitServices() {
+func InitialServices() {
 	container := dig.New()
 
 	_ = container.Provide(func() *worker.Dispatcher {
 		return worker.NewDispatcher(conf.EnvConfig.MaxWorker).Run()
 	})
+
+	_ = container.Provide(NewWebsocketService)
 
 	serviceContainer = container
 }

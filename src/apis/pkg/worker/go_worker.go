@@ -1,12 +1,11 @@
 package worker
 
 import (
-	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"github.com/jrallison/go-workers"
 	"insightful/src/apis/conf"
 	"insightful/src/apis/pkg/enum"
+	"insightful/src/apis/service"
 	"math/rand"
 	"strconv"
 	"time"
@@ -23,6 +22,11 @@ func (l *MyLogger) Printf(fmt string, v ...interface{}) {
 }
 
 func RunGoWorker() {
+	var websocketService service.WebsocketService
+	_ = service.GetServiceContainer().Invoke(func(s service.WebsocketService) {
+		websocketService = s
+	})
+
 	// init go worker
 	workers.Configure(map[string]string{
 		// location of redis instance
@@ -39,7 +43,7 @@ func RunGoWorker() {
 	workers.Logger = &MyLogger{}
 
 	// register job types and the function to execute them
-	workers.Process(enum.JobNameCoordinate, CoordinateWorker, 100) // (queue name, Executor/Worker, concurrency
+	workers.Process(enum.JobNameCoordinate, websocketService.CoordinateWorker, 100) // (queue name, Executor/Worker, concurrency
 
 	// stats will be available at http://localhost:8890/stats
 	go workers.StatsServer(8890)
@@ -48,23 +52,23 @@ func RunGoWorker() {
 	workers.Run()
 }
 
-func CoordinateWorker(message *workers.Msg) {
-	arr, err := message.Args().Array()
-	if err != nil {
-		return
-	}
-
-	rawDecodedText, err := base64.StdEncoding.DecodeString(arr[0].(string))
-	var data interface{}
-	err = json.Unmarshal(rawDecodedText, &data)
-	if err != nil {
-		fmt.Println("error:", err)
-	}
-
-	// Go ahead and proccess
-	sm.Add(data)
-	return
-}
+//func CoordinateWorker(message *workers.Msg) {
+//	arr, err := message.Args().Array()
+//	if err != nil {
+//		return
+//	}
+//
+//	rawDecodedText, err := base64.StdEncoding.DecodeString(arr[0].(string))
+//	var data interface{}
+//	err = json.Unmarshal(rawDecodedText, &data)
+//	if err != nil {
+//		fmt.Println("error:", err)
+//	}
+//
+//	// Go ahead and proccess
+//	SM.Add(data)
+//	return
+//}
 
 func AddJob(queue string, at time.Time, args ...interface{}) string {
 	ts := float64(at.UTC().Unix())

@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"github.com/gocraft/work"
 	"insightful/src/apis/dtos"
 	"insightful/src/apis/pkg/enum"
 	go_worker "insightful/src/apis/pkg/worker"
@@ -46,7 +45,7 @@ func (s *NormalJobController) NormalJobWorkerGoCraft(w http.ResponseWriter, r *h
 	}
 
 	// enqueue job
-	enqueueJobCraft(enum.JobNameCoordinate, work.Q{"data": content})
+	//enqueueJobCraft(enum.JobNameCoordinate, work.Q{"data": content})
 
 	s.ServeJSONWithCode(w, http.StatusOK, &dtos.HttpResponse{
 		Meta: &dtos.MetaResp{
