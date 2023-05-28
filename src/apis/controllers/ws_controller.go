@@ -1,16 +1,14 @@
 package controllers
 
 import (
-	"github.com/gocraft/work"
+	"context"
 	"github.com/gorilla/websocket"
-	"insightful/src/apis/pkg/enum"
-	go_worker "insightful/src/apis/pkg/worker"
+	"insightful/src/apis/services"
 	"log"
 	"net/http"
-	"time"
 )
 
-type WsController struct {
+type WebsocketController struct {
 	BaseController
 }
 
@@ -21,7 +19,12 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func (s *WsController) WebsocketWorkerGoCraft(w http.ResponseWriter, r *http.Request) {
+func (s *WebsocketController) WebsocketWorkerGoCraft(w http.ResponseWriter, r *http.Request) {
+	var websocketService services.WebsocketService
+	_ = services.GetServiceContainer().Invoke(func(s services.WebsocketService) {
+		websocketService = s
+	})
+
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
 	// upgrade this connection to a WebSocket
@@ -33,7 +36,6 @@ func (s *WsController) WebsocketWorkerGoCraft(w http.ResponseWriter, r *http.Req
 	defer ws.Close()
 
 	// helpful log statement to show connections
-	log.Println("Client Connected")
 	err = ws.WriteMessage(1, []byte("Hi Client!"))
 	if err != nil {
 		log.Println(err)
@@ -41,10 +43,15 @@ func (s *WsController) WebsocketWorkerGoCraft(w http.ResponseWriter, r *http.Req
 
 	// listen indefinitely for new messages coming
 	// through on our WebSocket connection
-	readerWithGoCraft(ws)
+	err = websocketService.ReaderWithGoCraft(context.Background(), ws)
 }
 
-func (s *WsController) WebsocketWorkerGoWorker(w http.ResponseWriter, r *http.Request) {
+func (s *WebsocketController) WebsocketWorkerGoWorker(w http.ResponseWriter, r *http.Request) {
+	var websocketService services.WebsocketService
+	_ = services.GetServiceContainer().Invoke(func(s services.WebsocketService) {
+		websocketService = s
+	})
+
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
 	// upgrade this connection to a WebSocket
@@ -56,7 +63,6 @@ func (s *WsController) WebsocketWorkerGoWorker(w http.ResponseWriter, r *http.Re
 	defer ws.Close()
 
 	// helpful log statement to show connections
-	log.Println("Client Connected")
 	err = ws.WriteMessage(1, []byte("Hi Client!"))
 	if err != nil {
 		log.Println(err)
@@ -64,50 +70,50 @@ func (s *WsController) WebsocketWorkerGoWorker(w http.ResponseWriter, r *http.Re
 
 	// listen indefinitely for new messages coming
 	// through on our WebSocket connection
-	readerWithGoWorker(ws)
+	err = websocketService.ReaderWithGoWorker(context.Background(), ws)
 }
 
 // define a reader which will listen for
 // new messages being sent to our WebSocket
 // endpoint
-func readerWithGoCraft(conn *websocket.Conn) {
-	for {
-		// read in a message
-		messageType, p, err := conn.ReadMessage()
-		if err != nil {
-			log.Println(err)
-			return
-		}
+//func (s *WebsocketController) readerWithGoCraft(conn *websocket.Conn) {
+//	for {
+//		// read in a message
+//		messageType, p, err := conn.ReadMessage()
+//		if err != nil {
+//			log.Println(err)
+//			return
+//		}
+//
+//		// enqueue go craft
+//		enqueueJobCraft(
+//			enum.JobNameCoordinate,
+//			work.Q{enum.GoCraftMessage: p},
+//		)
+//
+//		if err := conn.WriteMessage(messageType, p); err != nil {
+//			log.Println(err)
+//			return
+//		}
+//
+//	}
+//}
 
-		// enqueue go craft
-		enqueueJobCraft(
-			enum.JobNameCoordinate,
-			work.Q{enum.GoCraftMessage: p},
-		)
-
-		if err := conn.WriteMessage(messageType, p); err != nil {
-			log.Println(err)
-			return
-		}
-
-	}
-}
-
-func readerWithGoWorker(conn *websocket.Conn) {
-	for {
-		// read in a message
-		messageType, p, err := conn.ReadMessage()
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		go_worker.AddJob(enum.JobNameCoordinate, time.Now().UTC(), p)
-
-		if err := conn.WriteMessage(messageType, p); err != nil {
-			log.Println(err)
-			return
-		}
-
-	}
-}
+//func (s *WebsocketController) readerWithGoWorker(conn *websocket.Conn) {
+//	for {
+//		// read in a message
+//		messageType, p, err := conn.ReadMessage()
+//		if err != nil {
+//			log.Println(err)
+//			return
+//		}
+//
+//		go_worker.AddJob(enum.JobNameCoordinate, time.Now().UTC(), p)
+//
+//		if err := conn.WriteMessage(messageType, p); err != nil {
+//			log.Println(err)
+//			return
+//		}
+//
+//	}
+//}

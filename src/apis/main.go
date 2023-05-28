@@ -5,6 +5,7 @@ import (
 	"insightful/src/apis/kit/custom_worker"
 	"insightful/src/apis/pkg/worker"
 	"insightful/src/apis/router"
+	"insightful/src/apis/services"
 	"log"
 )
 
@@ -22,7 +23,7 @@ func init() {
 	//}
 
 	// Init services
-	//services.InitServices()
+	services.InitialServices()
 }
 
 func main() {

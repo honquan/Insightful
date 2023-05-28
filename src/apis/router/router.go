@@ -37,7 +37,7 @@ func (a *App) InitRouter() {
 	a.Router.HandleFunc(fmt.Sprintf("%v/custom/worker", RouterWSPrefix), customJobController.WorkerJobCustom).Methods(http.MethodPost)
 
 	// add router websocket controller
-	wsController := &controllers.WsController{}
+	wsController := &controllers.WebsocketController{}
 	a.Router.HandleFunc(fmt.Sprintf("%v/ws/worker-craft", RouterWSPrefix), wsController.WebsocketWorkerGoCraft).Methods(http.MethodGet)
 	a.Router.HandleFunc(fmt.Sprintf("%v/ws/worker-go", RouterWSPrefix), wsController.WebsocketWorkerGoWorker).Methods(http.MethodGet)
 
@@ -52,7 +52,7 @@ func (a *App) InitRouter() {
 	a.Router.HandleFunc(fmt.Sprintf("%v/job/worker-gocraft", RouterWSPrefix), jobController.WorkerGoCraft).Methods(http.MethodGet)
 
 	// register middleware
-	a.Router.Use(a.recoverPanicMiddleware)
+	//a.Router.Use(a.recoverPanicMiddleware)
 }
 
 func (a *App) InitDatabase() {

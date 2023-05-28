@@ -2,11 +2,8 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/gocraft/work"
 	"insightful/src/apis/dtos"
-	"insightful/src/apis/pkg/enum"
 	go_worker "insightful/src/apis/pkg/worker"
-	"log"
 	"net/http"
 	"time"
 )
@@ -31,7 +28,7 @@ func (s *JobController) WorkerGoWorker(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *JobController) WorkerGoCraft(w http.ResponseWriter, r *http.Request) {
-	enqueueEmail()
+	//enqueueEmail()
 
 	s.ServeJSONWithCode(w, http.StatusOK, &dtos.HttpResponse{
 		Meta: &dtos.MetaResp{
@@ -41,18 +38,18 @@ func (s *JobController) WorkerGoCraft(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-var enqueuer = work.NewEnqueuer(enum.CoordinateNameSpace, go_worker.RedisPool)
+//var enqueuer = work.NewEnqueuer(enum.CoordinateNameSpace, go_worker.RedisPool)
+//
+//func enqueueJobCraft(job string, payload work.Q) {
+//	_, err := enqueuer.Enqueue(job, payload)
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//}
 
-func enqueueJobCraft(job string, payload work.Q) {
-	_, err := enqueuer.Enqueue(job, payload)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func enqueueEmail() {
-	enqueueJobCraft(
-		"send_email",
-		work.Q{"address": "test@example.com", "subject": "hello world", "customer_id": 4},
-	)
-}
+//func enqueueEmail() {
+//	enqueueJobCraft(
+//		"send_email",
+//		work.Q{"address": "test@example.com", "subject": "hello world", "customer_id": 4},
+//	)
+//}

@@ -7,12 +7,9 @@ import (
 	"github.com/gocraft/work"
 	"github.com/gomodule/redigo/redis"
 	"insightful/src/apis/conf"
-	"insightful/src/apis/kit/custom_worker"
 	"insightful/src/apis/pkg/enum"
-	"log"
 	"os"
 	"os/signal"
-	"time"
 )
 
 // Make a redis pool
@@ -23,12 +20,6 @@ var RedisPool = &redis.Pool{
 	Dial: func() (redis.Conn, error) {
 		return redis.Dial("tcp", fmt.Sprintf(":%v", conf.EnvConfig.RedisPort))
 	},
-}
-
-var sm = &custom_worker.CoordinateClient{
-	MaxBatchSize:        100,
-	BatchTimeout:        5000 * time.Millisecond,
-	PendingWorkCapacity: 100,
 }
 
 type Context struct {
@@ -42,10 +33,6 @@ func RunGoCraft() {
 	// "CoordinateNameSpace" is the Redis namespace
 	// redisPool is a Redis pool
 	pool := work.NewWorkerPool(Context{}, 100, enum.CoordinateNameSpace, RedisPool)
-
-	if err := sm.Start(); err != nil {
-		log.Printf("Error when start muster: ", err)
-	}
 
 	// Add middleware that will be executed for each job
 	//pool.Middleware((*Context).Log)
@@ -101,7 +88,7 @@ func (c *Context) saveCoordinate(job *work.Job) error {
 	}
 
 	// Go ahead and proccess
-	sm.Add(data)
+	//SM.Add(data)
 
 	return nil
 }

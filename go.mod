@@ -24,6 +24,7 @@ require (
 	github.com/onsi/gomega v1.27.6 // indirect
 	github.com/orfjackal/nanospec.go v0.0.0-20120727230329-de4694c1d701 // indirect
 	github.com/robfig/cron v1.2.0 // indirect
+	go.mongodb.org/mongo-driver v1.10.2
 	go.uber.org/dig v1.10.0
 	go.uber.org/zap v1.16.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
