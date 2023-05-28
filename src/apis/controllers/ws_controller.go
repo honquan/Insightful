@@ -3,7 +3,7 @@ package controllers
 import (
 	"context"
 	"github.com/gorilla/websocket"
-	"insightful/src/apis/service"
+	"insightful/src/apis/services"
 	"log"
 	"net/http"
 )
@@ -20,8 +20,8 @@ var upgrader = websocket.Upgrader{
 }
 
 func (s *WebsocketController) WebsocketWorkerGoCraft(w http.ResponseWriter, r *http.Request) {
-	var websocketService service.WebsocketService
-	_ = service.GetServiceContainer().Invoke(func(s service.WebsocketService) {
+	var websocketService services.WebsocketService
+	_ = services.GetServiceContainer().Invoke(func(s services.WebsocketService) {
 		websocketService = s
 	})
 
@@ -47,8 +47,8 @@ func (s *WebsocketController) WebsocketWorkerGoCraft(w http.ResponseWriter, r *h
 }
 
 func (s *WebsocketController) WebsocketWorkerGoWorker(w http.ResponseWriter, r *http.Request) {
-	var websocketService service.WebsocketService
-	_ = service.GetServiceContainer().Invoke(func(s service.WebsocketService) {
+	var websocketService services.WebsocketService
+	_ = services.GetServiceContainer().Invoke(func(s services.WebsocketService) {
 		websocketService = s
 	})
 

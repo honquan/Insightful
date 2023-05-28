@@ -5,7 +5,7 @@ import (
 	"github.com/jrallison/go-workers"
 	"insightful/src/apis/conf"
 	"insightful/src/apis/pkg/enum"
-	"insightful/src/apis/service"
+	"insightful/src/apis/services"
 	"math/rand"
 	"strconv"
 	"time"
@@ -22,8 +22,8 @@ func (l *MyLogger) Printf(fmt string, v ...interface{}) {
 }
 
 func RunGoWorker() {
-	var websocketService service.WebsocketService
-	_ = service.GetServiceContainer().Invoke(func(s service.WebsocketService) {
+	var websocketService services.WebsocketService
+	_ = services.GetServiceContainer().Invoke(func(s services.WebsocketService) {
 		websocketService = s
 	})
 

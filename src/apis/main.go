@@ -5,7 +5,7 @@ import (
 	"insightful/src/apis/kit/custom_worker"
 	"insightful/src/apis/pkg/worker"
 	"insightful/src/apis/router"
-	"insightful/src/apis/service"
+	"insightful/src/apis/services"
 	"log"
 )
 
@@ -22,8 +22,8 @@ func init() {
 	//	log.Printf("Could not instantiate log")
 	//}
 
-	// Init service
-	service.InitialServices()
+	// Init services
+	services.InitialServices()
 }
 
 func main() {
