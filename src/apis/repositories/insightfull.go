@@ -9,7 +9,7 @@ import (
 type InsightfullRepository interface {
 	Repository
 	Create(ctx context.Context, data *model.Insightful) error
-	CreateMany(ctx context.Context, data []model.Insightful) error
+	CreateMany(ctx context.Context, data []interface{}) error
 }
 
 type insightfullRepository struct {
@@ -26,12 +26,8 @@ func (r *insightfullRepository) Create(ctx context.Context, data *model.Insightf
 	return err
 }
 
-func (r *insightfullRepository) CreateMany(ctx context.Context, data []model.Insightful) error {
-	arrInsightfull := []interface{}{}
-	for _, insightfull := range data {
-		arrInsightfull = append(arrInsightfull, insightfull)
-	}
-	_, err := r.Collection(ctx, model.Insightful{}).InsertMany(ctx, arrInsightfull)
+func (r *insightfullRepository) CreateMany(ctx context.Context, data []interface{}) error {
+	_, err := r.Collection(ctx, model.Insightful{}).InsertMany(ctx, data)
 
 	return err
 }

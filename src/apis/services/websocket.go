@@ -30,16 +30,16 @@ type websocketService struct {
 	muster muster.Client
 
 	Client *websocketService
-	Items  []model.Insightful
+	Items  []interface{}
 }
 
 func NewWebsocketService(insightfullRepo repository.InsightfullRepository) WebsocketService {
 	wss := &websocketService{
 		insightfullRepo: insightfullRepo,
 	}
-	wss.muster.MaxBatchSize = 20
-	wss.muster.BatchTimeout = 2000 * time.Millisecond
-	wss.muster.PendingWorkCapacity = 20
+	wss.muster.MaxBatchSize = 100
+	wss.muster.BatchTimeout = 5000 * time.Millisecond
+	wss.muster.PendingWorkCapacity = 100
 	wss.muster.BatchMaker = func() muster.Batch {
 		return &websocketService{
 			Client:          wss,
@@ -57,7 +57,7 @@ func NewWebsocketService(insightfullRepo repository.InsightfullRepository) Webso
 func (s *websocketService) ReaderWithGoWorker(ctx context.Context, conn *websocket.Conn) error {
 	for {
 		// read in a message
-		messageType, p, err := conn.ReadMessage()
+		_, p, err := conn.ReadMessage()
 		if err != nil {
 			return err
 		}
@@ -68,9 +68,9 @@ func (s *websocketService) ReaderWithGoWorker(ctx context.Context, conn *websock
 		//
 		//}
 
-		if err := conn.WriteMessage(messageType, p); err != nil {
-			return err
-		}
+		//if err := conn.WriteMessage(messageType, p); err != nil {
+		//	return err
+		//}
 
 	}
 }
@@ -89,7 +89,13 @@ func (s *websocketService) CoordinateWorker(message *workers.Msg) {
 	}
 
 	// Go ahead and proccess
-	s.Push(data)
+	s.Push(model.Insightful{
+		Mongo: model.Mongo{
+			CreatedAt: time.Now(),
+		},
+		Done:      0,
+		Coodiates: data,
+	})
 	return
 }
 
@@ -117,26 +123,19 @@ func (s *websocketService) Push(item interface{}) {
 // is the case here, the Batch implementation is internal to the user of muster
 // and not exposed to the users of ShoppingClient.
 func (s *websocketService) Add(item interface{}) {
-	insightfull := model.Insightful{
-		Mongo: model.Mongo{
-			CreatedAt: time.Now(),
-		},
-		Done:      0,
-		Coodiates: item,
-	}
-	s.Items = append(s.Items, insightfull)
+	s.Items = append(s.Items, item)
 }
 
 // Once a Batch is ready, it will be Fired. It must call notifier.Done once the
 // batch has been processed.
 func (s *websocketService) Fire(notifier muster.Notifier) {
 	defer notifier.Done()
-	log.Println(" ==============================================================================================")
-	log.Println(" ==============================================================================================")
-	log.Println(" ==============================================================================================")
-	log.Println(" ==============================================================================================")
-	log.Println(" ==============================================================================================")
-	log.Println("Delivery websocket ===================", s.Items)
+	//log.Println(" ==============================================================================================")
+	//log.Println(" ==============================================================================================")
+	//log.Println(" ==============================================================================================")
+	//log.Println(" ==============================================================================================")
+	//log.Println(" ==============================================================================================")
+	//log.Println("Delivery websocket ===================", s.Items)
 	err := s.insightfullRepo.CreateMany(context.Background(), s.Items)
 	if err != nil {
 
