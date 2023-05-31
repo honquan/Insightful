@@ -12,17 +12,21 @@ import (
 	"github.com/jrallison/go-workers"
 	"insightful/model"
 	"insightful/src/apis/conf"
+	"insightful/src/apis/kit/custom_worker"
 	"insightful/src/apis/pkg/enum"
 	repository "insightful/src/apis/repositories"
 	"log"
+	"os"
 	"time"
 )
 
 type WebsocketService interface {
 	ReaderWithGoWorker(ctx context.Context, conn *websocket.Conn) error
 	ReaderWithGoCraft(ctx context.Context, conn *websocket.Conn) error
+	ReaderWithCustomWorkerPool(ctx context.Context, conn *websocket.Conn) error
 	CoordinateWorkerGo(message *workers.Msg)
 	CoordinateWorkerCraft(job *work.Job) error
+	CoordinateWorkerPool(job custom_worker.Job) error
 }
 
 type websocketService struct {
@@ -51,6 +55,12 @@ func NewWebsocketService(insightfullRepo repository.InsightfullRepository) Webso
 	if err != nil {
 
 	}
+
+	// init custom worker pool
+	custom_worker.JobQueue = make(chan custom_worker.Job, conf.EnvConfig.MaxWorker)
+	dispatcher := custom_worker.NewDispatcher(conf.EnvConfig.MaxWorker)
+	dispatcher.AppendCallbackWorker(wss.CoordinateWorkerPool)
+	dispatcher.Run()
 
 	return wss
 }
@@ -137,11 +147,11 @@ func (s *websocketService) Fire(notifier muster.Notifier) {
 	//log.Println(" ==============================================================================================")
 	//log.Println(" ==============================================================================================")
 	//log.Println("Delivery websocket ===================", s.Items)
+
 	err := s.insightfullRepo.CreateMany(context.Background(), s.Items)
 	if err != nil {
-
 	}
-	//os.Stdout.Sync()
+	os.Stdout.Sync()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -214,5 +224,46 @@ func (s *websocketService) CoordinateWorkerCraft(job *work.Job) error {
 		Coodiates: data,
 	})
 
+	return nil
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+func (s *websocketService) ReaderWithCustomWorkerPool(ctx context.Context, conn *websocket.Conn) error {
+	for {
+		// read in a message
+		_, p, err := conn.ReadMessage()
+		if err != nil {
+			return err
+		}
+
+		// Push the work onto the queue.
+		custom_worker.Submit(p)
+	}
+}
+
+func (s *websocketService) CoordinateWorkerPool(job custom_worker.Job) error {
+	var data interface{}
+	err := json.Unmarshal(job.Payload, &data)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+
+	// Go ahead and proccess
+	s.Push(model.Insightful{
+		Mongo: model.Mongo{
+			CreatedAt: time.Now(),
+		},
+		Done:      0,
+		Coodiates: data,
+	})
 	return nil
 }

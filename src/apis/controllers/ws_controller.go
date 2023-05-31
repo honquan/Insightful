@@ -73,6 +73,27 @@ func (s *WebsocketController) WebsocketWorkerGoWorker(w http.ResponseWriter, r *
 	err = websocketService.ReaderWithGoWorker(context.Background(), ws)
 }
 
+func (s *WebsocketController) WebsocketWorkerPool(w http.ResponseWriter, r *http.Request) {
+	var websocketService services.WebsocketService
+	_ = services.GetServiceContainer().Invoke(func(s services.WebsocketService) {
+		websocketService = s
+	})
+
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+
+	// upgrade this connection to a WebSocket
+	// connection
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+	}
+	defer ws.Close()
+
+	// listen indefinitely for new messages coming
+	// through on our WebSocket connection
+	err = websocketService.ReaderWithCustomWorkerPool(context.Background(), ws)
+}
+
 // define a reader which will listen for
 // new messages being sent to our WebSocket
 // endpoint
