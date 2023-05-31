@@ -43,7 +43,7 @@ func RunGoWorker() {
 	workers.Logger = &MyLogger{}
 
 	// register job types and the function to execute them
-	workers.Process(enum.JobNameCoordinate, websocketService.CoordinateWorker, 100) // (queue name, Executor/Worker, concurrency
+	workers.Process(enum.JobNameCoordinate, websocketService.CoordinateWorkerGo, 100) // (queue name, Executor/Worker, concurrency
 
 	// stats will be available at http://localhost:8890/stats
 	go workers.StatsServer(8890)

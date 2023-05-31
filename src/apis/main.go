@@ -1,8 +1,6 @@
 package main
 
 import (
-	"insightful/src/apis/conf"
-	"insightful/src/apis/kit/custom_worker"
 	"insightful/src/apis/pkg/worker"
 	"insightful/src/apis/router"
 	"insightful/src/apis/services"
@@ -30,9 +28,9 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 
 	// run custom job worker without redis
-	custom_worker.JobQueue = make(chan custom_worker.Job, conf.EnvConfig.MaxWorker)
-	dispatcher := custom_worker.NewDispatcher(conf.EnvConfig.MaxWorker)
-	dispatcher.Run()
+	//custom_worker.JobQueue = make(chan custom_worker.Job, conf.EnvConfig.MaxWorker)
+	//dispatcher := custom_worker.NewDispatcher(conf.EnvConfig.MaxWorker)
+	//dispatcher.Run()
 
 	// run muster
 	//muster.Run()

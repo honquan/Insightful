@@ -30,7 +30,7 @@ func (s *CustomJobController) WorkerJobCustom(w http.ResponseWriter, r *http.Req
 	//jobWorker.JobQueue <- work
 
 	// Push the work onto the queue.
-	jobWorker.Submit(*content)
+	//jobWorker.Submit(*content)
 
 	s.ServeJSONWithCode(w, http.StatusOK, &dtos.HttpResponse{
 		Meta: &dtos.MetaResp{

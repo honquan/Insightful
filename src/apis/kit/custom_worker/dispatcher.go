@@ -2,7 +2,6 @@ package custom_worker
 
 import (
 	"fmt"
-	"insightful/src/apis/dtos"
 )
 
 type Dispatcher struct {
@@ -55,6 +54,6 @@ func (d *Dispatcher) dispatch() {
 	}
 }
 
-func Submit(data dtos.WsPayload) {
+func Submit(data []byte) {
 	JobQueue <- Job{Payload: data}
 }
