@@ -21,7 +21,8 @@ import (
 type WebsocketService interface {
 	ReaderWithGoWorker(ctx context.Context, conn *websocket.Conn) error
 	ReaderWithGoCraft(ctx context.Context, conn *websocket.Conn) error
-	CoordinateWorker(message *workers.Msg)
+	CoordinateWorkerGo(message *workers.Msg)
+	CoordinateWorkerCraft(job *work.Job) error
 }
 
 type websocketService struct {
@@ -75,7 +76,7 @@ func (s *websocketService) ReaderWithGoWorker(ctx context.Context, conn *websock
 	}
 }
 
-func (s *websocketService) CoordinateWorker(message *workers.Msg) {
+func (s *websocketService) CoordinateWorkerGo(message *workers.Msg) {
 	arr, err := message.Args().Array()
 	if err != nil {
 		return
@@ -156,7 +157,7 @@ func (s *websocketService) Fire(notifier muster.Notifier) {
 func (s *websocketService) ReaderWithGoCraft(ctx context.Context, conn *websocket.Conn) error {
 	for {
 		// read in a message
-		messageType, p, err := conn.ReadMessage()
+		_, p, err := conn.ReadMessage()
 		if err != nil {
 			return err
 		}
@@ -167,9 +168,9 @@ func (s *websocketService) ReaderWithGoCraft(ctx context.Context, conn *websocke
 			work.Q{enum.GoCraftMessage: p},
 		)
 
-		if err := conn.WriteMessage(messageType, p); err != nil {
-			return err
-		}
+		//if err := conn.WriteMessage(messageType, p); err != nil {
+		//	return err
+		//}
 
 	}
 }
@@ -188,4 +189,30 @@ func (s *websocketService) enqueueJobCraft(job string, payload work.Q) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (s *websocketService) CoordinateWorkerCraft(job *work.Job) error {
+	// Extract arguments:
+	if err := job.ArgError(); err != nil {
+		return err
+	}
+
+	rawDecodedText, err := base64.StdEncoding.DecodeString(job.Args[enum.GoCraftMessage].(string))
+
+	var data interface{}
+	err = json.Unmarshal(rawDecodedText, &data)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+
+	// Go ahead and proccess
+	s.Push(model.Insightful{
+		Mongo: model.Mongo{
+			CreatedAt: time.Now(),
+		},
+		Done:      0,
+		Coodiates: data,
+	})
+
+	return nil
 }

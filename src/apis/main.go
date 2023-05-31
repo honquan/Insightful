@@ -42,7 +42,7 @@ func main() {
 	a.InitRouter()
 
 	// run worker go worker
-	go worker.RunGoWorker()
+	//go worker.RunGoWorker()
 
 	// run go craft
 	go worker.RunGoCraft()

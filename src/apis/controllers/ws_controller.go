@@ -36,10 +36,10 @@ func (s *WebsocketController) WebsocketWorkerGoCraft(w http.ResponseWriter, r *h
 	defer ws.Close()
 
 	// helpful log statement to show connections
-	err = ws.WriteMessage(1, []byte("Hi Client!"))
-	if err != nil {
-		log.Println(err)
-	}
+	//err = ws.WriteMessage(1, []byte("Hi Client!"))
+	//if err != nil {
+	//	log.Println(err)
+	//}
 
 	// listen indefinitely for new messages coming
 	// through on our WebSocket connection
@@ -63,10 +63,10 @@ func (s *WebsocketController) WebsocketWorkerGoWorker(w http.ResponseWriter, r *
 	defer ws.Close()
 
 	// helpful log statement to show connections
-	err = ws.WriteMessage(1, []byte("Hi Client!"))
-	if err != nil {
-		log.Println(err)
-	}
+	//err = ws.WriteMessage(1, []byte("Hi Client!"))
+	//if err != nil {
+	//	log.Println(err)
+	//}
 
 	// listen indefinitely for new messages coming
 	// through on our WebSocket connection
