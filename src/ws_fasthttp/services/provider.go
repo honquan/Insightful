@@ -14,9 +14,6 @@ func InitialServices() {
 	container := dig.New()
 	_ = container.Provide(config.NewConfig)
 
-	_ = container.Provide(connection.InitWorker)
-	_ = container.Provide(connection.InitEnqueueGoCraft)
-
 	// provide connect mongo
 	_ = container.Provide(connection.InitMongo)
 

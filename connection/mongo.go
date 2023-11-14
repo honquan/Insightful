@@ -7,13 +7,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.uber.org/zap"
-	"insightful/src/apis/conf"
+	"insightful/common/config"
 )
 
-func NewMongoConnection() (*mongo.Database, func() error, error) {
+func InitMongo(conf *config.Config) *mongo.Database {
 
-	ops := options.Client().ApplyURI(conf.EnvConfig.MongoURI)
-	if conf.EnvConfig.MongoDebug {
+	ops := options.Client().ApplyURI(conf.Mongo.MongoURI).SetMaxPoolSize(500000)
+	if conf.Mongo.MongoDebug {
 		ops = ops.SetMonitor(&event.CommandMonitor{
 			Started: func(ctx context.Context, startedEvent *event.CommandStartedEvent) {
 				zap.S().Debug(startedEvent.Command)
@@ -22,17 +22,18 @@ func NewMongoConnection() (*mongo.Database, func() error, error) {
 	}
 	client, err := mongo.NewClient(ops)
 	if err != nil {
-		return nil, nil, err
+		zap.S().Errorf("Error when create client mongo")
+		return nil
 	}
 	ctx := context.Background()
 	err = client.Connect(ctx)
 	if err != nil {
-		return nil, nil, err
+		zap.S().Errorf("Error when connect client mongo")
+		return nil
 	}
 	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
-		return nil, nil, err
+		zap.S().Errorf("Error when ping mongo")
+		return nil
 	}
-	return client.Database(conf.EnvConfig.MongoDatabaseName), func() error {
-		return client.Disconnect(ctx)
-	}, nil
+	return client.Database(conf.Mongo.MongoDatabaseName)
 }

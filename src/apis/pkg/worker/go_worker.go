@@ -3,7 +3,7 @@ package worker
 import (
 	"fmt"
 	"github.com/jrallison/go-workers"
-	"insightful/src/apis/conf"
+	"insightful/common/config"
 	"insightful/src/apis/pkg/enum"
 	"insightful/src/apis/services"
 	"math/rand"
@@ -27,14 +27,19 @@ func RunGoWorker() {
 		websocketService = s
 	})
 
+	var conf *config.Config
+	_ = services.GetServiceContainer().Invoke(func(c *config.Config) {
+		conf = c
+	})
+
 	// init go worker
 	workers.Configure(map[string]string{
 		// location of redis instance
-		"server": fmt.Sprintf("%v:%v", conf.EnvConfig.RedisHost, conf.EnvConfig.RedisPort),
+		"server": fmt.Sprintf("%v:%v", conf.Redis.RedisHost, conf.Redis.RedisPort),
 		// instance of the database
-		"database": "10",
+		"database": "100",
 		// number of connections to keep open with redis
-		"pool": "100",
+		"pool": "10000",
 		// unique process id for this instance of workers (for proper recovery of inprogress jobs on crash)
 		"process": strconv.Itoa(rand.Intn(10000)),
 	})
@@ -46,10 +51,10 @@ func RunGoWorker() {
 	workers.Process(enum.JobNameCoordinate, websocketService.CoordinateWorkerGo, 100) // (queue name, Executor/Worker, concurrency
 
 	// stats will be available at http://localhost:8890/stats
-	go workers.StatsServer(8890)
+	//go workers.StatsServer(8890)
 
 	// Blocks until process is told to exit via unix signal
-	workers.Run()
+	go workers.Run()
 }
 
 //func CoordinateWorker(message *workers.Msg) {

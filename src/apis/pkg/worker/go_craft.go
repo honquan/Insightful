@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/gocraft/work"
 	"github.com/gomodule/redigo/redis"
-	"insightful/src/apis/conf"
+	"insightful/common/config"
 	"insightful/src/apis/pkg/enum"
 	"insightful/src/apis/services"
 	"os"
@@ -23,17 +23,22 @@ func RunGoCraft() {
 		websocketService = s
 	})
 
+	var conf *config.Config
+	_ = services.GetServiceContainer().Invoke(func(c *config.Config) {
+		conf = c
+	})
+
 	// Make a new pool. Arguments:
 	// Context{} is a struct that will be the context for the request.
 	// 10 is the max concurrency
 	// "CoordinateNameSpace" is the Redis namespace
 	// redisPool is a Redis pool
-	pool := work.NewWorkerPool(Context{}, 100, enum.CoordinateNameSpace, &redis.Pool{
-		MaxActive: 5,
-		MaxIdle:   5,
+	pool := work.NewWorkerPool(Context{}, 10000, enum.CoordinateNameSpace, &redis.Pool{
+		MaxActive: 50,
+		MaxIdle:   50,
 		Wait:      true,
 		Dial: func() (redis.Conn, error) {
-			return redis.Dial("tcp", fmt.Sprintf(":%v", conf.EnvConfig.RedisPort))
+			return redis.Dial("tcp", fmt.Sprintf(":%v", conf.Redis.RedisPort))
 		},
 	})
 

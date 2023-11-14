@@ -2,7 +2,7 @@ package response
 
 import (
 	"fmt"
-	"insightful/src/apis/pkg/pagination"
+	"insightful/common/pagination"
 	"net/http"
 )
 

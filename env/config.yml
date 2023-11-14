@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: $JOB_NAME
+data:
+  ENVIRONMENT: "qc"
+  HTTP_PORT: "8081"
+  DB_USERNAME: "merchant_service_qc"
+  DB_DATABASE: "merchant_service_qc"
+  DB_HOST: "vep-mysql-master.int.vinid.dev"
+  DB_PORT: "3306"
+  DB_DRIVER: "mysql"
+  DB_MAX_OPEN_CONN: "4"
+  DB_MAX_IDLE_CONN: "1"

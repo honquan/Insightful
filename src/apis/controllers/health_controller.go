@@ -23,8 +23,7 @@ type HealthController struct {
 func (s *HealthController) HealthCheck(w http.ResponseWriter, req *http.Request) {
 	resp := &dtos.HttpResponse{
 		Meta: &dtos.MetaResp{
-			Code:    http.StatusOK,
-			Message: "I'm ok",
+			Code: http.StatusOK,
 		},
 	}
 	s.ServeJSONWithCode(w, http.StatusOK, resp)
@@ -42,7 +41,7 @@ func (s *HealthController) BuildData(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 	}
 
-	n := 1000000
+	n := 200000
 
 	defer f.Close()
 

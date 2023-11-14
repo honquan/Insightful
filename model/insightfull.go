@@ -8,9 +8,9 @@ import (
 )
 
 type Insightful struct {
-	Mongo     `bson:",inline"`
-	Done      byte        `bson:"done" json:"done"`
-	Coodiates interface{} `bson:"coodiates" json:"coodiates,omitempty"`
+	Mongo       `bson:",inline"`
+	Coordinates interface{} `bson:"c" json:"c,omitempty"`
+	//Done      byte        `bson:"done" json:"done"`
 }
 
 func (Insightful) CollectionName(ws string) string {
@@ -19,7 +19,6 @@ func (Insightful) CollectionName(ws string) string {
 
 func (c *Insightful) UpdateModel(ctx context.Context) bson.M {
 	return bson.M{
-		"done":       1,
-		"updated_at": time.Now(),
+		"updated_at": time.Now().Unix(),
 	}
 }

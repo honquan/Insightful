@@ -4,27 +4,23 @@ import (
 	"go.uber.org/dig"
 	"insightful/common/config"
 	"insightful/connection"
-	repository "insightful/src/apis/repositories"
+	"insightful/src/worker/repositories"
 )
 
 // serviceContainer is a global ServiceProvider.
 var serviceContainer *dig.Container
 
-func InitialServices() {
+func InitServices() {
 	container := dig.New()
+
 	_ = container.Provide(config.NewConfig)
-
-	_ = container.Provide(connection.InitWorker)
-	_ = container.Provide(connection.InitEnqueueGoCraft)
-
-	// provide connect mongo
+	_ = container.Provide(connection.InitPostgres)
 	_ = container.Provide(connection.InitMongo)
 
-	// provide repo
-	_ = container.Provide(repository.NewInsightfullRepository)
+	_ = container.Provide(repositories.NewPostgresInsightfullRepository)
+	_ = container.Provide(repositories.NewMongoInsightfullRepository)
 
-	// provide service
-	_ = container.Provide(NewWebsocketService)
+	_ = container.Provide(NewAnalyzeDataService)
 
 	serviceContainer = container
 }

@@ -3,12 +3,12 @@ package model
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"gorm.io/gorm"
-	"time"
 )
 
 type Mongo struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty"`
-	CreatedAt time.Time          `bson:"created_at,omitempty"`
+	CreatedAt int64              `bson:"c_at,omitempty"`
+	UpdatedAt int64              `bson:"u_at,omitempty"`
 	//UpdatedAt time.Time          `bson:"updated_at,omitempty"`
 }
 

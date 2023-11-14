@@ -4,14 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"insightful/src/apis/conf"
 	"insightful/src/apis/controllers"
 	"insightful/src/apis/dtos"
 	"log"
 	"net/http"
-	"time"
 )
 
 const (
@@ -37,10 +34,11 @@ func (a *App) InitRouter() {
 	a.Router.HandleFunc(fmt.Sprintf("%v/custom/worker", RouterWSPrefix), customJobController.WorkerJobCustom).Methods(http.MethodPost)
 
 	// add router websocket controller
-	wsController := &controllers.WebsocketController{}
+	wsController := controllers.NewWebsocketController()
 	a.Router.HandleFunc(fmt.Sprintf("%v/ws/worker-craft", RouterWSPrefix), wsController.WebsocketWorkerGoCraft).Methods(http.MethodGet)
 	a.Router.HandleFunc(fmt.Sprintf("%v/ws/worker-go", RouterWSPrefix), wsController.WebsocketWorkerGoWorker).Methods(http.MethodGet)
 	a.Router.HandleFunc(fmt.Sprintf("%v/ws/worker-pool", RouterWSPrefix), wsController.WebsocketWorkerPool).Methods(http.MethodGet)
+	a.Router.HandleFunc(fmt.Sprintf("%v/ws/worker-ants", RouterWSPrefix), wsController.WebsocketAntsWorker).Methods(http.MethodGet)
 
 	// normal job
 	normalController := &controllers.NormalJobController{}
@@ -54,31 +52,6 @@ func (a *App) InitRouter() {
 
 	// register middleware
 	//a.Router.Use(a.recoverPanicMiddleware)
-}
-
-func (a *App) InitDatabase() {
-	var err error
-	mysqlUsername := conf.EnvConfig.DBMysqlUsername
-	mysqlPassword := conf.EnvConfig.DBMysqlPassword
-	mysqlHost := conf.EnvConfig.DBMysqlHost
-	mysqlPort := conf.EnvConfig.DBMysqlPort
-	mysqlDBName := conf.EnvConfig.DBMysqlName
-
-	dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8mb4&parseTime=True", mysqlUsername, mysqlPassword, mysqlHost, mysqlPort, mysqlDBName)
-	a.MysqlDB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil {
-		panic(fmt.Sprintf("Failed to connect database: %v", err))
-	}
-
-	sqlDB, err := a.MysqlDB.DB()
-	if err != nil {
-		panic(fmt.Sprintf("Failed to connect database: %v", err))
-	}
-	sqlDB.SetConnMaxLifetime(30 * time.Minute)
-
-	// set max idle and max open conns
-	sqlDB.SetMaxIdleConns(conf.EnvConfig.DBMysqlMaxIdleConns)
-	sqlDB.SetMaxOpenConns(conf.EnvConfig.DBMysqlMaxOpenConns)
 }
 
 func (a *App) Run(addr string) {
