@@ -8,7 +8,7 @@ import (
 )
 
 type InsightfullRepository interface {
-	Repository
+	MongoRepository
 	Create(ctx context.Context, data *model.Insightful) error
 	CreateMany(ctx context.Context, data []interface{}) error
 	BulkWrite(ctx context.Context, data []mongo.WriteModel) error

@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type Repository interface {
+type MongoRepository interface {
 	BeginTx(ctx context.Context, fn func(ctx context.Context) error) error
 }
 

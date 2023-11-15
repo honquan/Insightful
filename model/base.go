@@ -19,3 +19,7 @@ type MySQL struct {
 type MongoModel interface {
 	CollectionName(ws string) string
 }
+
+type SQLModel interface {
+	TableName() string
+}
