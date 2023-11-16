@@ -1,0 +1,6 @@
+request = function()
+  wrk.headers["Connection"] = "Keep-Alive"
+  param_value = math.random(1,100)
+  path = "/my_path?param_name=" .. param_value
+  return wrk.format("GET", path)
+end

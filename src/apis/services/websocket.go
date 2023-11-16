@@ -14,6 +14,7 @@ import (
 	"insightful/model"
 	"insightful/src/apis/kit/custom_worker"
 	"insightful/src/apis/pkg/enum"
+	"insightful/src/apis/pkg/queue"
 	repository "insightful/src/apis/repositories"
 	"log"
 	"os"
@@ -49,6 +50,15 @@ func NewWebsocketService(dispatcher *custom_worker.Dispatcher, insightfullRepo r
 		insightfullRepo: insightfullRepo,
 		enqueuer:        enqueuer,
 	}
+
+	kafkaProducer, err := queue.NewKafkaProducer(queue.ProducerConfig{
+		SeedBrokers:      conf.Host,
+		NumFlushMessages: 1,
+		EnableTLS:        conf.EnableTLS,
+		ClientCertFile:   conf.ClientCertFile,
+		ClientKeyFile:    conf.ClientKeyFile,
+		CaCertFile:       conf.CaCertFile,
+	})
 
 	// init muster
 	wss.muster.MaxBatchSize = 1000
